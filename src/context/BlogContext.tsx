@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BlogData, Post, ReadingItem, Milestone, SiteProfile, ContactMessage, PostStream } from '../types/blog';
+import { BlogData, Post, ReadingItem, Milestone, SiteProfile, ContactMessage, PostStream, AuthUser } from '../types/blog';
 import { INITIAL_BLOG_DATA } from '../data/initialData';
 
-const STORAGE_KEY = 'hafizudeen_quant_journal_v3';
+const STORAGE_KEY = 'hafizudeen_quant_journal_v4';
+const AUTH_STORAGE_KEY = 'hafizudeen_auth_user_v1';
+export const OWNER_EMAIL = 'hafizudeen991022@gmail.com';
 
 interface BlogContextType {
   data: BlogData;
@@ -12,6 +14,15 @@ interface BlogContextType {
   setSelectedPost: (post: Post | null) => void;
   activeStream: string;
   setActiveStream: (stream: string) => void;
+  
+  // Authentication & Admin Access Control
+  user: AuthUser | null;
+  isOwnerAuthenticated: boolean;
+  loginWithGoogle: (email?: string, name?: string, picture?: string) => boolean;
+  logout: () => void;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  openAdminWithAuthCheck: () => void;
   
   // Post operations
   createPost: (postData: Partial<Post>) => Post;
@@ -66,6 +77,24 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeStream, setActiveStream] = useState<string>('All');
   const [notification, setNotification] = useState<string | null>(null);
+  
+  // Auth state
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const isOwnerAuthenticated = Boolean(
+    user && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase() && user.isOwner
+  );
 
   // Sync with localStorage
   useEffect(() => {
@@ -76,6 +105,19 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     }
   }, [data]);
 
+  // Sync Auth with localStorage
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [user]);
+
   useEffect(() => {
     if (notification) {
       const t = setTimeout(() => setNotification(null), 3500);
@@ -85,6 +127,46 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
 
   const showNotice = (msg: string) => {
     setNotification(msg);
+  };
+
+  const loginWithGoogle = (email?: string, name?: string, picture?: string): boolean => {
+    const targetEmail = (email || OWNER_EMAIL).toLowerCase().trim();
+    const isOwner = targetEmail === OWNER_EMAIL.toLowerCase();
+
+    const authUser: AuthUser = {
+      email: targetEmail,
+      name: name || (isOwner ? data.profile.name : targetEmail.split('@')[0]),
+      picture: picture || (isOwner ? data.profile.avatarUrl : undefined),
+      isOwner,
+    };
+
+    setUser(authUser);
+
+    if (isOwner) {
+      showNotice(`Authenticated as ${targetEmail}. Admin access unlocked.`);
+      setIsAuthModalOpen(false);
+      setActiveView('admin');
+      return true;
+    } else {
+      showNotice(`Signed in as ${targetEmail}. Access restricted: Only ${OWNER_EMAIL} can access studio management.`);
+      return false;
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    if (activeView === 'admin') {
+      setActiveView('public');
+    }
+    showNotice('Logged out of Google account.');
+  };
+
+  const openAdminWithAuthCheck = () => {
+    if (isOwnerAuthenticated) {
+      setActiveView('admin');
+    } else {
+      setIsAuthModalOpen(true);
+    }
   };
 
   const createPost = (postData: Partial<Post>): Post => {
@@ -239,7 +321,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
         ...updates,
       },
     }));
-    showNotice('Profile saved');
+    showNotice('Profile & picture saved');
   };
 
   const submitContactMessage = (msg: { name: string; email: string; subject: string; message: string }) => {
@@ -314,6 +396,13 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
         setSelectedPost,
         activeStream,
         setActiveStream,
+        user,
+        isOwnerAuthenticated,
+        loginWithGoogle,
+        logout,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        openAdminWithAuthCheck,
         createPost,
         updatePost,
         deletePost,

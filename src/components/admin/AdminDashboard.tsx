@@ -22,8 +22,13 @@ import {
   ExternalLink,
   Target,
   ArrowLeft,
-  Star
+  Star,
+  Camera,
+  ImageIcon,
+  ShieldAlert,
+  Lock,
 } from 'lucide-react';
+import { OWNER_EMAIL } from '../../context/BlogContext';
 
 export const AdminDashboard: React.FC = () => {
   const {
@@ -39,6 +44,9 @@ export const AdminDashboard: React.FC = () => {
     exportDataJson,
     importDataJson,
     resetToDefaults,
+    isOwnerAuthenticated,
+    user,
+    setIsAuthModalOpen,
   } = useBlog();
 
   const [activeTab, setActiveTab] = useState<'posts' | 'reading' | 'milestones' | 'profile' | 'inquiries' | 'backup'>('posts');
@@ -59,6 +67,41 @@ export const AdminDashboard: React.FC = () => {
   const [profileForm, setProfileForm] = useState(data.profile);
   const [interestsString, setInterestsString] = useState(data.profile.interests.join(', '));
   const [pinnedThoughtsString, setPinnedThoughtsString] = useState(data.profile.pinnedThoughts.join('\n'));
+  const [avatarUploadNotice, setAvatarUploadNotice] = useState<string | null>(null);
+
+  // Sync profileForm when data.profile updates
+  React.useEffect(() => {
+    setProfileForm(data.profile);
+    setInterestsString(data.profile.interests.join(', '));
+    pinnedThoughtsString !== data.profile.pinnedThoughts.join('\n') && setPinnedThoughtsString(data.profile.pinnedThoughts.join('\n'));
+  }, [data.profile]);
+
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image file is too large. Please select an image under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        const base64Url = reader.result;
+        setProfileForm((prev) => ({ ...prev, avatarUrl: base64Url }));
+        updateProfile({ avatarUrl: base64Url });
+        setAvatarUploadNotice('New profile picture uploaded and saved successfully.');
+        setTimeout(() => setAvatarUploadNotice(null), 4000);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +110,8 @@ export const AdminDashboard: React.FC = () => {
       interests: interestsString.split(',').map((s) => s.trim()).filter(Boolean),
       pinnedThoughts: pinnedThoughtsString.split('\n').map((s) => s.trim()).filter(Boolean),
     });
+    setAvatarUploadNotice('Profile details saved.');
+    setTimeout(() => setAvatarUploadNotice(null), 3000);
   };
 
   const handleBackupFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,6 +128,51 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const unreadMessagesCount = data.messages.filter((m) => !m.read).length;
+
+  // Authorization Security Barrier: Only OWNER_EMAIL can access admin dashboard
+  if (!isOwnerAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] text-zinc-900 flex items-center justify-center p-6 font-sans">
+        <div className="max-w-md w-full bg-white rounded-xl border border-zinc-200 p-8 shadow-sm space-y-6 text-center">
+          <div className="w-14 h-14 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center mx-auto text-zinc-900">
+            <Lock className="w-6 h-6 text-zinc-900" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-zinc-950">Administrative Access Protected</h2>
+            <p className="text-xs text-zinc-600 font-mono">
+              Only the authenticated site owner ({OWNER_EMAIL}) has permission to access this management dashboard.
+            </p>
+          </div>
+
+          {user && !user.isOwner && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-800 text-left space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <ShieldAlert className="w-4 h-4 text-red-600" />
+                <span>Unauthorized Account</span>
+              </div>
+              <p>You are currently logged in as <span className="font-mono font-medium">{user.email}</span>, which does not have editing privileges.</p>
+            </div>
+          )}
+
+          <div className="pt-2 flex flex-col gap-2">
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="w-full py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-mono uppercase tracking-wider rounded-md font-semibold cursor-pointer shadow-xs transition-colors"
+            >
+              Sign In with Google
+            </button>
+            <button
+              onClick={() => setActiveView('public')}
+              className="w-full py-2 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-mono uppercase tracking-wider rounded-md cursor-pointer transition-colors"
+            >
+              Return to Public Site
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-zinc-900 pb-24 font-sans">
@@ -467,11 +557,108 @@ export const AdminDashboard: React.FC = () => {
             <div>
               <h2 className="text-2xl font-bold text-zinc-950">Author Profile & Research Statement</h2>
               <p className="text-xs font-mono text-zinc-500">
-                Update your bio statement, contact email ({data.profile.email}), research areas, and axioms.
+                Update your avatar photo, bio statement, contact email ({data.profile.email}), research areas, and axioms.
               </p>
             </div>
 
+            {avatarUploadNotice && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-xs font-mono flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{avatarUploadNotice}</span>
+              </div>
+            )}
+
             <form onSubmit={handleProfileSubmit} className="bg-white rounded-lg border border-zinc-200 p-8 space-y-6 text-xs font-mono shadow-2xs">
+              {/* Profile Picture Uploader */}
+              <div className="p-5 bg-zinc-50 border border-zinc-200 rounded-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="block text-zinc-900 uppercase font-bold text-xs tracking-wide">
+                    Profile Picture
+                  </label>
+                  <span className="text-[10px] text-zinc-500 font-mono">PNG, JPG, or WEBP up to 5MB</span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  {/* Current Avatar Circle */}
+                  <div className="relative group shrink-0">
+                    <img
+                      src={profileForm.avatarUrl || data.profile.avatarUrl}
+                      alt={profileForm.name}
+                      referrerPolicy="no-referrer"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-zinc-300 shadow-sm bg-zinc-200"
+                    />
+                    <label
+                      htmlFor="profile-avatar-file"
+                      className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-mono"
+                    >
+                      <Camera className="w-5 h-5 mb-1" />
+                      <span>Change</span>
+                    </label>
+                  </div>
+
+                  {/* Actions & URL Input */}
+                  <div className="flex-1 space-y-3 w-full">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label
+                        htmlFor="profile-avatar-file"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-md text-xs font-mono uppercase tracking-wider cursor-pointer shadow-2xs font-semibold transition-colors"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Photo</span>
+                      </label>
+                      <input
+                        id="profile-avatar-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarFileUpload}
+                        className="hidden"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const fallbackAvatar = '/src/assets/images/avatar_hafizudeen_male_1793872307450.jpg';
+                          setProfileForm((prev) => ({ ...prev, avatarUrl: fallbackAvatar }));
+                          updateProfile({ avatarUrl: fallbackAvatar });
+                          setAvatarUploadNotice('Reset to default male headshot.');
+                          setTimeout(() => setAvatarUploadNotice(null), 3000);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-zinc-100 border border-zinc-300 rounded-md text-xs font-mono text-zinc-700 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-zinc-500" />
+                        <span>Reset Photo</span>
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-zinc-600 mb-1">Or paste image URL directly:</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          placeholder="https://example.com/photo.jpg"
+                          value={profileForm.avatarUrl}
+                          onChange={(e) => setProfileForm({ ...profileForm, avatarUrl: e.target.value })}
+                          className="flex-1 px-3 py-1.5 bg-white border border-zinc-300 rounded-md text-zinc-900 font-sans text-xs focus:ring-1 focus:ring-zinc-900"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (profileForm.avatarUrl) {
+                              updateProfile({ avatarUrl: profileForm.avatarUrl });
+                              setAvatarUploadNotice('Avatar URL saved.');
+                              setTimeout(() => setAvatarUploadNotice(null), 3000);
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-zinc-200 hover:bg-zinc-300 text-zinc-900 rounded-md font-mono text-xs cursor-pointer font-medium"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-zinc-700 uppercase mb-1 font-semibold">Author Name *</label>

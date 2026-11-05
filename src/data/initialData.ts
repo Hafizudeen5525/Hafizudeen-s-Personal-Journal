@@ -29,6 +29,62 @@ export const INITIAL_BLOG_DATA: BlogData = {
   },
   posts: [
     {
+      id: 'post-umich',
+      title: "Three Angles on Uncertainty: What My Years at Michigan Taught Me",
+      slug: 'three-angles-on-uncertainty-michigan',
+      stream: 'Personal & Life',
+      excerpt: "Reflections from Ann Arbor on pursuing Actuarial Mathematics, Statistics, Data Science, and Ross Business—and the pivotal shift from measuring static risk to modeling continuous dynamic markets.",
+      publishedDate: 'November 5, 2026',
+      readTime: '7 min read',
+      status: 'published',
+      featured: true,
+      tags: ['University of Michigan', 'Actuarial Mathematics', 'Statistics', 'Data Science', 'Ross Business', 'Ann Arbor'],
+      mathHighlight: '\\text{Actuarial Risk } (L_t) \\;\\perp\\; \\text{Statistical Inference } (\\hat{\\theta}) \\;\\perp\\; \\text{Stochastic Microstructure}',
+      keyTakeaway: 'Mathematical elegance means little if you cannot compute it, and large-scale computation means nothing if the underlying probabilistic assumptions are flawed.',
+      content: `I arrived in Ann Arbor with a perspective shaped almost entirely by Olympiad mathematics. For years, problem-solving had meant self-contained elegance: given a set of axioms and four and a half hours, there existed a deterministic path to a clean, unambiguous proof.
+
+Yet the world outside competition mathematics is rarely self-contained, and it is almost never clean.
+
+At the University of Michigan, I sought a broader mathematical foundation than any single discipline alone could offer. Rather than confining myself to a traditional single-track degree, I chose to pursue majors in **Actuarial Mathematics**, **Statistics**, and **Data Science**, alongside a business minor at the **Stephen M. Ross School of Business**.
+
+Looking back, that decision was not about accumulating credentials; it was about studying uncertainty from three genuinely complementary angles.
+
+### 1. Actuarial Science: The Architecture of Long-Term Risk
+
+In East Hall, actuarial mathematics gave me my first formal exposure to the rigorous measurement of risk. It provided an uncompromising framework built on probability theory, compound interest, survival models, and ruin theory:
+
+$$L_0 = \\text{PV}(\\text{Future Outflows}) - \\text{PV}(\\text{Future Inflows})$$
+
+Actuarial models taught me the gravity of solvency—how to price liabilities that extend thirty years into an unknown future. Yet, as rigorous as it was, actuarial science treats uncertainty with a certain scheduled calm: policies mature, premiums arrive, and reserves are audited at the end of a financial period. 
+
+I found myself drawn, increasingly and perhaps a little restlessly, to environments in which uncertainty evolves not at the end of a policy year, but continuously, second by second.
+
+### 2. Statistics: The Skeptical Discipline of Inference
+
+If actuarial science provided the calculus of risk, statistics provided the antidote to intellectual hubris.
+
+In classes across West Hall and Mason Hall, statistics taught me to interrogate every assumption underneath an estimator:
+- Why an unbiased estimator $\\hat{\\theta}$ can still exhibit crippling variance.
+- How small violations in stationarity or normality degrade asymptotic confidence intervals into meaningless fictions.
+- The delicate trade-off between bias and variance in high-dimensional parameter spaces.
+
+Statistics instilled in me a deep, permanent skepticism of "clean" fits on historical data.
+
+### 3. Data Science & Ross Business: Computation and Real-World Friction
+
+Mathematics on a whiteboard can be intoxicating in its simplicity. But data science forced those abstractions to answer to algorithmic reality: profiling memory bottlenecks, vectorizing high-dimensional tensor operations, and understanding numerical stability in floating-point operations.
+
+Meanwhile, at the Ross School of Business, discussions on capital markets, corporate strategy, and organizational decision-making grounded my technical coursework in practical human reality. I learned that even the most mathematically sophisticated model achieves very little if it cannot be communicated clearly to traders, engineers, or risk officers who must stake real capital on its output.
+
+### The Ann Arbor Invariant
+
+Ann Arbor in February has a way of testing your persistence. Walking across the snow-covered Diag at 7:00 AM with temperatures dropping below -15°C, notebook tucked inside a heavy parka on the way to a morning probability seminar, you learn the quiet value of showing up consistently.
+
+Late nights in East Hall working through measure-theoretic proofs with fellow students taught me that progress in difficult fields is rarely about lone flashes of genius. It is built on persistence—the willingness to sit with an unsolved problem long after the initial excitement has faded.
+
+Michigan gave me more than three degrees; it gave me the intellectual vocabulary to bridge rigorous abstraction with computational execution. It was the place where I realized that quantitative finance is not merely the mechanical application of known techniques, but an evolving frontier where mathematical theory and empirical evidence must answer to one another, continuously and without compromise.`,
+    },
+    {
       id: 'post-1',
       title: "What Does It Mean for a Model to Be Right? Notes on Mathematical Finance",
       slug: 'what-does-it-mean-for-a-model-to-be-right',

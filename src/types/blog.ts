@@ -72,6 +72,13 @@ export interface ContactMessage {
   read: boolean;
 }
 
+export interface AuthUser {
+  email: string;
+  name: string;
+  picture?: string;
+  isOwner: boolean;
+}
+
 export interface BlogData {
   profile: SiteProfile;
   posts: Post[];

@@ -9,6 +9,7 @@ import { AboutSection } from './components/AboutSection';
 import { Footer } from './components/Footer';
 import { PostDetailModal } from './components/PostDetailModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { CheckCircle, X } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
@@ -71,6 +72,9 @@ const MainLayout: React.FC = () => {
           onClose={() => setSelectedPost(null)}
         />
       )}
+
+      {/* Google Authentication Modal Gate */}
+      <GoogleAuthModal />
     </div>
   );
 };

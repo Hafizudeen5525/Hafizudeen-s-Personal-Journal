@@ -3,7 +3,7 @@ import { useBlog } from '../context/BlogContext';
 import { ArrowUp } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { data, setActiveView } = useBlog();
+  const { data, openAdminWithAuthCheck } = useBlog();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -35,7 +35,7 @@ export const Footer: React.FC = () => {
             About & SoP
           </a>
           <button
-            onClick={() => setActiveView('admin')}
+            onClick={openAdminWithAuthCheck}
             className="hover:text-zinc-950 transition-colors underline cursor-pointer"
           >
             Studio Dashboard
