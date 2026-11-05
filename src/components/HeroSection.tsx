@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBlog } from '../context/BlogContext';
 import { Post } from '../types/blog';
+import { BlockMath } from './MathRenderer';
 import { ArrowRight, Clock, Binary, BookOpen, Target, Compass, Terminal, Cpu } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -119,10 +120,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSelectPost }) => {
                 </div>
 
                 {featuredPost.mathHighlight ? (
-                  <div className="py-4 text-center">
-                    <code className="text-sm sm:text-base font-semibold text-zinc-100 block bg-zinc-900 p-3.5 rounded-md border border-zinc-800">
-                      {featuredPost.mathHighlight}
-                    </code>
+                  <div className="py-2">
+                    <BlockMath math={featuredPost.mathHighlight} className="my-0 bg-zinc-900 border-zinc-800" />
                   </div>
                 ) : (
                   <p className="text-zinc-300 text-sm italic">

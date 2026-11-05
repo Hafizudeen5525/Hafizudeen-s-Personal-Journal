@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useBlog } from '../context/BlogContext';
 import { Post, PostStream } from '../types/blog';
+import { InlineMath } from './MathRenderer';
 import { Search, ArrowUpRight, Binary, BookOpen, Compass, Target } from 'lucide-react';
 
 interface PostListProps {
@@ -144,9 +145,9 @@ export const PostList: React.FC<PostListProps> = ({ onSelectPost }) => {
 
                     {/* Formula highlight snippet if present */}
                     {post.mathHighlight && (
-                      <div className="p-2.5 bg-zinc-900 rounded-md font-mono text-xs text-zinc-200 border border-zinc-800 truncate">
-                        <span className="text-[10px] uppercase text-zinc-400 block mb-0.5">Equation:</span>
-                        <code className="text-zinc-100 font-semibold">{post.mathHighlight}</code>
+                      <div className="p-2.5 bg-zinc-900 rounded-md font-mono text-xs text-zinc-100 border border-zinc-800 overflow-x-auto">
+                        <span className="text-[10px] uppercase text-zinc-400 block mb-1">Equation:</span>
+                        <InlineMath math={post.mathHighlight} className="text-zinc-100 font-semibold" />
                       </div>
                     )}
                   </div>

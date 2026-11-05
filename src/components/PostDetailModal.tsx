@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Post } from '../types/blog';
 import { useBlog } from '../context/BlogContext';
+import { BlockMath, FormattedArticleContent } from './MathRenderer';
 import { X, ArrowLeft, Clock, Share2, Binary, ArrowRight, ExternalLink, Tag } from 'lucide-react';
 
 interface PostDetailModalProps {
@@ -123,15 +124,11 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, onClose 
           {/* Formula Callout (if math post) */}
           {post.mathHighlight && (
             <div className="bg-zinc-950 text-zinc-100 p-6 rounded-lg mb-10 shadow-sm border border-zinc-800">
-              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-3">
+              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
                 <Binary className="w-3.5 h-3.5 text-zinc-300" />
                 <span className="font-semibold text-zinc-200">Core Mathematical Formulation</span>
               </div>
-              <div className="overflow-x-auto py-2 text-center">
-                <code className="text-base sm:text-lg font-mono font-semibold text-zinc-100">
-                  {post.mathHighlight}
-                </code>
-              </div>
+              <BlockMath math={post.mathHighlight} className="my-0 py-3 bg-zinc-900 border-zinc-800 text-zinc-100" />
             </div>
           )}
 
@@ -147,48 +144,9 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, onClose 
             </div>
           )}
 
-          {/* Prose Content */}
-          <div className="prose prose-zinc max-w-none text-zinc-800 leading-relaxed space-y-6 text-base font-sans">
-            {post.content.split('\n\n').map((paragraph, idx) => {
-              if (paragraph.startsWith('>')) {
-                const quoteText = paragraph.replace(/^>\s*/, '').replace(/^"|"$/g, '');
-                return (
-                  <blockquote
-                    key={idx}
-                    className="my-8 py-4 px-6 bg-zinc-50 border-l-2 border-zinc-900 text-zinc-800 font-sans italic text-lg leading-relaxed"
-                  >
-                    "{quoteText}"
-                  </blockquote>
-                );
-              }
-
-              if (paragraph.startsWith('### ')) {
-                const headerText = paragraph.replace(/^###\s*/, '');
-                return (
-                  <h3 key={idx} className="text-xl font-bold text-zinc-950 pt-6 mb-2 tracking-tight">
-                    {headerText}
-                  </h3>
-                );
-              }
-
-              if (paragraph.startsWith('$$') && paragraph.endsWith('$$')) {
-                const formula = paragraph.replace(/^\$\$\s*/, '').replace(/\s*\$\$$/, '');
-                return (
-                  <div
-                    key={idx}
-                    className="my-6 p-4 bg-zinc-950 text-zinc-100 rounded-md font-mono text-center text-sm sm:text-base overflow-x-auto border border-zinc-800"
-                  >
-                    <code className="text-zinc-100 font-medium">{formula}</code>
-                  </div>
-                );
-              }
-
-              return (
-                <p key={idx} className="leading-relaxed">
-                  {paragraph}
-                </p>
-              );
-            })}
+          {/* Prose Content with LaTeX Math */}
+          <div className="mt-8">
+            <FormattedArticleContent content={post.content} />
           </div>
 
           {/* Tags */}

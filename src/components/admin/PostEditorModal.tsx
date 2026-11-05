@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Post, PostStream } from '../../types/blog';
 import { useBlog } from '../../context/BlogContext';
+import { BlockMath, FormattedArticleContent } from '../MathRenderer';
 import { X, Check, Binary, BookOpen, Compass, Target, HelpCircle } from 'lucide-react';
 
 interface PostEditorModalProps {
@@ -284,31 +285,31 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({ post, onClose 
               </div>
             </form>
           ) : (
-            /* Preview Tab */
+            /* Preview Tab with KaTeX rendering */
             <div className="max-w-2xl mx-auto space-y-6">
-              <div className="flex items-center gap-2 text-xs font-mono uppercase text-stone-500">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase text-zinc-500 font-medium">
                 <span>{stream}</span>
                 <span>·</span>
                 <span>{readTime}</span>
               </div>
-              <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950 leading-tight">
                 {title || 'Untitled Note'}
               </h2>
-              <p className="text-stone-600 italic font-serif text-lg">"{excerpt}"</p>
+              {excerpt && <p className="text-zinc-600 text-base leading-relaxed">{excerpt}</p>}
               {mathHighlight && (
-                <div className="bg-stone-900 text-amber-300 p-4 rounded-md font-mono text-center">
-                  <code>{mathHighlight}</code>
+                <div className="my-4">
+                  <span className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Equation Preview:</span>
+                  <BlockMath math={mathHighlight} className="my-0 bg-zinc-950 border-zinc-800 text-zinc-100" />
                 </div>
               )}
               {keyTakeaway && (
-                <div className="p-3 bg-stone-100 border-l-2 border-stone-800 text-stone-800 italic">
+                <div className="p-3 bg-zinc-100 border-l-2 border-zinc-950 text-zinc-800 font-sans text-sm">
+                  <span className="font-mono text-[10px] uppercase font-bold text-zinc-500 block mb-1">Key Takeaway</span>
                   "{keyTakeaway}"
                 </div>
               )}
-              <div className="space-y-4 text-stone-800 text-sm leading-relaxed font-sans">
-                {content.split('\n\n').map((p, idx) => (
-                  <p key={idx}>{p}</p>
-                ))}
+              <div className="pt-4 border-t border-zinc-200">
+                <FormattedArticleContent content={content || 'Start typing content...'} />
               </div>
             </div>
           )}

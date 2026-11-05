@@ -1,6 +1,8 @@
 {
-  "name": "Hafizudeen — Photography & Visual Journal",
-  "description": "Personal photography portfolio, travel chronicles, and storytelling journal by Hafizudeen with a clean responsive layout and administrative studio dashboard.",
+  "name": "Hafizudeen's Personal Journal",
+  "description": "Personal journal, mathematical finance notes, quantitative research, and milestones by Muhammad Hafizudeen.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
