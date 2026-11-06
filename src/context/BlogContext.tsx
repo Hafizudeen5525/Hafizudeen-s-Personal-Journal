@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BlogData, Post, ReadingItem, Milestone, SiteProfile, ContactMessage, PostStream, AuthUser } from '../types/blog';
 import { INITIAL_BLOG_DATA } from '../data/initialData';
 
-const STORAGE_KEY = 'hafizudeen_quant_journal_v4';
+const STORAGE_KEY = 'hafizudeen_quant_journal_v5';
 const AUTH_STORAGE_KEY = 'hafizudeen_auth_user_v1';
 export const OWNER_EMAIL = 'hafizudeen991022@gmail.com';
 

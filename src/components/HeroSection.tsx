@@ -25,9 +25,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSelectPost }) => {
         {/* Top Header Block */}
         <div className="max-w-3xl mb-12">
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-600 mb-4">
-            <span className="font-semibold text-zinc-900">Muhammad Hafizudeen</span>
-            <span aria-hidden="true">·</span>
+            <span className="font-semibold text-zinc-950">{data.profile.name}</span>
+            <span aria-hidden="true" className="text-amber-500 font-bold">·</span>
             <span>Mathematical Finance & Quant Research</span>
+            <span aria-hidden="true" className="text-blue-500 font-bold">·</span>
+            <span className="text-blue-700 font-semibold">Ann Arbor Alum</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-zinc-950 tracking-tight leading-[1.08] mb-6 [text-wrap:balance]">
@@ -110,33 +112,55 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSelectPost }) => {
                 </div>
               </div>
 
-              {/* Technical / Formula Block */}
-              <div className="lg:col-span-5 bg-zinc-950 text-zinc-100 p-6 sm:p-8 rounded-lg font-mono text-xs shadow-md space-y-4 border border-zinc-800">
-                <div className="flex items-center justify-between text-zinc-400 border-b border-zinc-800 pb-2">
-                  <span className="uppercase text-[10px] tracking-wider font-semibold text-zinc-300">
-                    Mathematical Formulation
-                  </span>
-                  <Terminal className="w-4 h-4 text-zinc-400" />
-                </div>
-
-                {featuredPost.mathHighlight ? (
-                  <div className="py-2">
-                    <BlockMath math={featuredPost.mathHighlight} className="my-0 bg-zinc-900 border-zinc-800" />
+              {/* Right Column: Visual Image with Technical Formulation Overlay */}
+              <div className="lg:col-span-5 flex flex-col gap-3">
+                {featuredPost.coverImage && (
+                  <div
+                    onClick={() => onSelectPost(featuredPost)}
+                    className="relative rounded-lg overflow-hidden border border-zinc-200 aspect-16/9 bg-zinc-100 group/img cursor-pointer shadow-xs"
+                  >
+                    <img
+                      src={featuredPost.coverImage}
+                      alt={featuredPost.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover/img:scale-102 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-3">
+                      <span className="text-white text-[11px] font-mono font-medium drop-shadow-sm flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span>{featuredPost.coverImageCaption || 'Law Quadrangle & Chronicle Archival Photo'}</span>
+                      </span>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-zinc-300 text-sm italic">
-                    "{featuredPost.keyTakeaway || featuredPost.excerpt}"
-                  </p>
                 )}
 
-                <div className="text-[11px] text-zinc-400 leading-relaxed pt-2 border-t border-zinc-800">
-                  <span className="text-zinc-300 font-semibold block mb-1">Index Tags:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {featuredPost.tags.map((t) => (
-                      <span key={t} className="bg-zinc-900 border border-zinc-800 text-zinc-300 px-2 py-0.5 rounded-xs text-[10px]">
-                        #{t}
-                      </span>
-                    ))}
+                <div className="bg-zinc-950 text-zinc-100 p-5 rounded-lg font-mono text-xs shadow-md space-y-3 border border-zinc-800">
+                  <div className="flex items-center justify-between text-zinc-400 border-b border-zinc-800 pb-2">
+                    <span className="uppercase text-[10px] tracking-wider font-semibold text-amber-400">
+                      Mathematical Formulation
+                    </span>
+                    <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+                  </div>
+
+                  {featuredPost.mathHighlight ? (
+                    <div className="py-1 overflow-x-auto">
+                      <BlockMath math={featuredPost.mathHighlight} className="my-0 bg-zinc-900 border-zinc-800 text-zinc-100 text-xs" />
+                    </div>
+                  ) : (
+                    <p className="text-zinc-300 text-xs italic">
+                      "{featuredPost.keyTakeaway || featuredPost.excerpt}"
+                    </p>
+                  )}
+
+                  <div className="text-[11px] text-zinc-400 leading-relaxed pt-1.5 border-t border-zinc-800 flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {featuredPost.tags.slice(0, 3).map((t) => (
+                        <span key={t} className="bg-zinc-900 border border-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded-xs text-[10px]">
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-blue-400 font-mono">Verified Archive</span>
                   </div>
                 </div>
               </div>

@@ -2,9 +2,9 @@ import { BlogData } from '../types/blog';
 
 export const INITIAL_BLOG_DATA: BlogData = {
   profile: {
-    name: 'Muhammad Hafizudeen',
+    name: 'Hafizudeen Saman',
     tagline: 'Quantitative Research · Mathematical Finance · Stochastic Systems',
-    bio: 'Former Malaysia IMO representative and University of Michigan graduate (Actuarial Mathematics, Statistics, Data Science & Ross Business). Experienced in derivatives pricing and trading risk at PETRONAS LNG Trading, and systematic strategy research with WorldQuant (Global Top 1%). Preoccupied with the mathematical foundations of financial models and the tension between elegant theory and empirical market reality.',
+    bio: 'University of Michigan alum (Triple Major in Actuarial Mathematics, Statistics, Data Science & Ross Business Minor; Summa Cum Laude & CIGNA Award recipient). UMTKD Collegiate Taekwondo athlete (National Bronze, Princeton Gold). Experienced in actuarial valuation at Aon, derivatives pricing & LNG trading risk at PETRONAS, and systematic strategy research with WorldQuant (Global Top 1%).',
     avatarUrl: '/src/assets/images/avatar_hafizudeen_male_1793872307450.jpg',
     email: 'hafizudeen991022@gmail.com',
     location: 'Kuala Lumpur · University of Michigan Alum',
@@ -24,65 +24,100 @@ export const INITIAL_BLOG_DATA: BlogData = {
     pinnedThoughts: [
       'What does it mean for a model to be right? The question is rarely whether a model predicts accurately, but why it succeeds in one setting and fails badly in another.',
       'Markets refuse to remain static; every new piece of information alters the state of the system, forcing models to adapt continuously while remaining mathematically coherent.',
-      'An idea you cannot explain clearly to someone outside your field is an idea you do not yet understand completely yourself.',
+      'Discipline on the mat and rigour on the whiteboard feed into one another: in competition as in mathematics, technique without poise breaks under pressure.',
     ],
   },
   posts: [
     {
       id: 'post-umich',
-      title: "Three Angles on Uncertainty: What My Years at Michigan Taught Me",
-      slug: 'three-angles-on-uncertainty-michigan',
+      title: "The Michigan Chronicle: Quad Architecture, Triple Major Grinds, UMTKD, and Winter on the Diag",
+      slug: 'the-michigan-chronicle-ann-arbor-experience',
       stream: 'Personal & Life',
-      excerpt: "Reflections from Ann Arbor on pursuing Actuarial Mathematics, Statistics, Data Science, and Ross Business—and the pivotal shift from measuring static risk to modeling continuous dynamic markets.",
+      excerpt: "From the quiet sanctuary of the Law Library and freezing 7 AM walks across the Diag, to UMTKD medals, an actuarial internship at Aon, COVID-era pivots, and receiving the CIGNA Award at graduation.",
       publishedDate: 'November 5, 2026',
-      readTime: '7 min read',
+      readTime: '8 min read',
       status: 'published',
       featured: true,
-      tags: ['University of Michigan', 'Actuarial Mathematics', 'Statistics', 'Data Science', 'Ross Business', 'Ann Arbor'],
-      mathHighlight: '\\text{Actuarial Risk } (L_t) \\;\\perp\\; \\text{Statistical Inference } (\\hat{\\theta}) \\;\\perp\\; \\text{Stochastic Microstructure}',
-      keyTakeaway: 'Mathematical elegance means little if you cannot compute it, and large-scale computation means nothing if the underlying probabilistic assumptions are flawed.',
-      content: `I arrived in Ann Arbor with a perspective shaped almost entirely by Olympiad mathematics. For years, problem-solving had meant self-contained elegance: given a set of axioms and four and a half hours, there existed a deterministic path to a clean, unambiguous proof.
+      tags: ['University of Michigan', 'LSA', 'UMTKD', 'Ann Arbor', 'Actuarial Math', 'Ross Business', 'Aon Internship'],
+      coverImage: '/src/assets/images/michigan_law_quad_library_1793896226792.jpg',
+      coverImageCaption: 'Evening amber light glowing through the Collegiate Gothic arches of the Law Quadrangle in Ann Arbor.',
+      gallery: [
+        {
+          url: '/src/assets/images/michigan_law_quad_library_1793896226792.jpg',
+          caption: 'The Law Library & Quadrangle: Quiet sanctuary of oak desks and leaded glass windows.',
+          alt: 'University of Michigan Law Quadrangle in Ann Arbor'
+        },
+        {
+          url: '/src/assets/images/collegiate_taekwondo_action_1793896226459.jpg',
+          caption: 'UMTKD in tournament mode: Bronze at Collegiate Nationals and Gold at Princeton NCTA.',
+          alt: 'University of Michigan Taekwondo Team tournament sparring match'
+        },
+        {
+          url: '/src/assets/images/ann_arbor_winter_diag_1793896227634.jpg',
+          caption: 'Snow on the Central Campus Diag: 7:00 AM sub-zero morning walks to East Hall.',
+          alt: 'University of Michigan Central Campus Diag covered in snow'
+        },
+        {
+          url: '/src/assets/images/michigan_graduation_commencement_1793896227030.jpg',
+          caption: 'Commencement day: Maize and blue cords, receiving the CIGNA Award and Summa Cum Laude.',
+          alt: 'University of Michigan Commencement regalia and honors diploma'
+        }
+      ],
+      mathHighlight: '\\text{Actuarial Science } (L_t) \\;\\perp\\; \\text{Statistics } (\\hat{\\theta}) \\;\\perp\\; \\text{Data Science } (\\mathcal{O}(N))',
+      keyTakeaway: 'The authentic Michigan experience was not merely three degrees on a diploma; it was learning how to adapt under severe friction—whether making weight for nationals, proving measure theory in sub-zero snow, or executing remote actuarial reserves during a global pandemic.',
+      content: `Anyone who has spent a winter in Ann Arbor knows the quiet, startling beauty of the Central Campus Diag at seven in the morning. When the temperature drops below -15°C, the cold cuts through your coat before you even reach the steps of Hatcher Graduate Library, and the brick pathways are dusted with fresh Michigan powder. 
 
-Yet the world outside competition mathematics is rarely self-contained, and it is almost never clean.
+Yet walking those snow-blanketed paths between Mason Hall and East Hall was where my university years truly took shape. Coming to Michigan wasn't just about collecting coursework; it was about immersing myself in the expansive, demanding culture of the College of Literature, Science, and the Arts (LSA) and discovering the rhythm of a university that expects uncompromising discipline from you in every arena.
 
-At the University of Michigan, I sought a broader mathematical foundation than any single discipline alone could offer. Rather than confining myself to a traditional single-track degree, I chose to pursue majors in **Actuarial Mathematics**, **Statistics**, and **Data Science**, alongside a business minor at the **Stephen M. Ross School of Business**.
+### The Architecture & The Sanctuary of the Law Library
 
-Looking back, that decision was not about accumulating credentials; it was about studying uncertainty from three genuinely complementary angles.
+When problem sets in measure-theoretic probability or high-dimensional multivariate statistics became overwhelming, the antidote was always the architecture of Ann Arbor.
 
-### 1. Actuarial Science: The Architecture of Long-Term Risk
+The Collegiate Gothic stonework of the **Law Quadrangle** remains etched into my memory. Walking beneath the stone arches into the Law Quad feels like stepping outside of time. In the reading room, under the soaring timbered ceilings and warm amber chandeliers, the silence is physical. You hear only the turning of heavy pages and the scratching of fountain pens on notebooks. It was here, at long oak study desks alongside stacks of legal treatises, that I spent hundreds of hours reading through stochastic calculus texts, working through measure-theoretic proofs, and dissecting statistical journals. The sheer serenity of that space taught me how to sit with intellectual difficulty without rushing to an easy conclusion.
 
-In East Hall, actuarial mathematics gave me my first formal exposure to the rigorous measurement of risk. It provided an uncompromising framework built on probability theory, compound interest, survival models, and ruin theory:
+### The LSA Life & The Triple Major Workload
 
-$$L_0 = \\text{PV}(\\text{Future Outflows}) - \\text{PV}(\\text{Future Inflows})$$
+Being an LSA student offered an intellectual freedom that few institutions match, but pairing three quantitative majors—**Actuarial Mathematics**, **Statistics**, and **Data Science**—alongside a business minor at the **Stephen M. Ross School of Business** demanded an almost military level of calendar governance.
 
-Actuarial models taught me the gravity of solvency—how to price liabilities that extend thirty years into an unknown future. Yet, as rigorous as it was, actuarial science treats uncertainty with a certain scheduled calm: policies mature, premiums arrive, and reserves are audited at the end of a financial period. 
+A typical Tuesday might start in East Hall with actuarial survival models and reserve calculations, transition to West Hall for mathematical statistics and likelihood inference, move across North University Avenue to the modern computer labs for large-scale algorithmic optimization in Python and C++, and conclude at the Ross School of Business debating corporate capital allocation and trading strategies. 
 
-I found myself drawn, increasingly and perhaps a little restlessly, to environments in which uncertainty evolves not at the end of a policy year, but continuously, second by second.
+Each department demanded a different posture:
+- **Actuarial Mathematics (East Hall)**: Grounded in solvency, mortality projections, and solvency regulation.
+- **Statistics (West Hall)**: The skeptical art of questioning whether the signal you think you found is merely sample variance.
+- **Data Science**: Algorithmic friction—vectorization, memory bounds, and numerical stability.
+- **Ross School of Business**: Translating complex quantitative machinery into executive clarity.
 
-### 2. Statistics: The Skeptical Discipline of Inference
+### Mat and Mind: UMTKD (Michigan Taekwondo)
 
-If actuarial science provided the calculus of risk, statistics provided the antidote to intellectual hubris.
+To survive a triple major with your mind intact, you need a physical anchor. For me, that anchor was **UMTKD (University of Michigan Taekwondo)**.
 
-In classes across West Hall and Mason Hall, statistics taught me to interrogate every assumption underneath an estimator:
-- Why an unbiased estimator $\\hat{\\theta}$ can still exhibit crippling variance.
-- How small violations in stationarity or normality degrade asymptotic confidence intervals into meaningless fictions.
-- The delicate trade-off between bias and variance in high-dimensional parameter spaces.
+Stepping into the training room at the CCRB after ten straight hours of coding and lemmas was transformative. On the mat, abstract equations disappear. All that remains is timing, distance, footwork, and decisive execution. Taekwondo requires an immediate honesty that mathematics rarely imposes in real time: if your reaction is a fraction of a second late or your distance is poorly judged, you pay for it instantly.
 
-Statistics instilled in me a deep, permanent skepticism of "clean" fits on historical data.
+Representing the University of Michigan across the collegiate circuit was one of the proudest chapters of my life:
+- **Collegiate Nationals**: Fighting through intense bracket rounds to secure the **Bronze Medal for Michigan**.
+- **Princeton University (NCTA)**: Competing in New Jersey against top Ivy League and national martial artists, leaving everything on the mat, and capturing the **Gold Medal at Princeton**.
 
-### 3. Data Science & Ross Business: Computation and Real-World Friction
+The discipline built cutting weight, sparring through fatigue, and defending the Block M jersey translated directly back into academic persistence. In competition as in research, technique without composure breaks under pressure.
 
-Mathematics on a whiteboard can be intoxicating in its simplicity. But data science forced those abstractions to answer to algorithmic reality: profiling memory bottlenecks, vectorizing high-dimensional tensor operations, and understanding numerical stability in floating-point operations.
+### The Industry Crucible: Actuarial Internship at Aon
 
-Meanwhile, at the Ross School of Business, discussions on capital markets, corporate strategy, and organizational decision-making grounded my technical coursework in practical human reality. I learned that even the most mathematically sophisticated model achieves very little if it cannot be communicated clearly to traders, engineers, or risk officers who must stake real capital on its output.
+During my university career, I also took my academic preparation into the commercial trenches through an actuarial consulting internship at **Aon**. 
 
-### The Ann Arbor Invariant
+Working at Aon demystified textbook finance. I was tasked with analyzing pension liabilities, running complex valuation models, and evaluating the sensitivity of multi-million-dollar portfolios to interest rate shifts and mortality assumptions. At Aon, I saw firsthand that actuarial work is not just an academic exercise—it is the financial bedrock that ensures retirees receive their livelihood. It provided me with a deep respect for governance and risk measurement, while subtly planting the seed that would later pull me into the continuous-time world of trading desks and liquid commodities.
 
-Ann Arbor in February has a way of testing your persistence. Walking across the snow-covered Diag at 7:00 AM with temperatures dropping below -15°C, notebook tucked inside a heavy parka on the way to a morning probability seminar, you learn the quiet value of showing up consistently.
+### Adapting Through the COVID Disruption
 
-Late nights in East Hall working through measure-theoretic proofs with fellow students taught me that progress in difficult fields is rarely about lone flashes of genius. It is built on persistence—the willingness to sit with an unsolved problem long after the initial excitement has faded.
+In the spring of 2020, our world fractured. Ann Arbor abruptly emptied. The bustling lecture halls of Mason Hall, the packed tables of Shapiro Library, and our daily training sessions in the dojang suddenly vanished behind computer screens as the COVID-19 pandemic swept across the globe.
 
-Michigan gave me more than three degrees; it gave me the intellectual vocabulary to bridge rigorous abstraction with computational execution. It was the place where I realized that quantitative finance is not merely the mechanical application of known techniques, but an evolving frontier where mathematical theory and empirical evidence must answer to one another, continuously and without compromise.`,
+Adapting to remote learning across completely mismatched time zones, maintaining physical training in isolation with resistance bands and kicking pads in a cramped apartment, and collaborating on high-dimensional data science group projects via Zoom required immense mental fortitude. It tested whether our motivation was reliant on external academic momentum or rooted internally. The pandemic forced us to become resilient, self-directed problem-solvers who could deliver rigorous results regardless of physical chaos.
+
+### Commencement: The CIGNA Award and Summa Cum Laude
+
+When graduation finally arrived, standing in the sea of maize and blue with my parents and peers felt like the culmination of every sub-zero morning walk and every midnight proof in East Hall.
+
+Walking across the stage, receiving my honors cords, and being awarded the **CIGNA Award for Actuarial Excellence** alongside graduating **Summa Cum Laude** was profoundly humbling. The CIGNA Award recognized dedication to the actuarial sciences, while Summa Cum Laude reflected maintaining the highest academic standing across all three demanding majors.
+
+Yet as I looked across campus one last time, what stayed with me was not the plaque or the awards. It was the memory of Ann Arbor itself: the golden leaves of the Law Quad in October, the steam rising from a cup of coffee on the frozen Diag in January, the camaraderie of training with UMTKD teammates, and the quiet confidence that whatever complex mathematical or financial challenge lies ahead, Michigan taught us how to face it with clarity and grit.`,
     },
     {
       id: 'post-1',
@@ -317,22 +352,30 @@ The mechanical rebalancing operation systematically sells overvalued asset units
     },
     {
       id: 'm-3',
-      year: '2023–2024',
-      title: 'Data Scientist at PETRONAS',
-      category: 'Career',
-      description: 'Built predictive machine learning models and signal extraction pipelines for high-frequency industrial time-series data.',
-      metrics: 'Extracted meaningful signal from high-noise telemetry',
+      year: '2023',
+      title: 'Graduated Summa Cum Laude & Awarded CIGNA Award for Actuarial Excellence',
+      category: 'Academic',
+      description: 'Completed Triple Major in Actuarial Mathematics, Statistics, and Data Science with Ross Business Minor from the University of Michigan, receiving the CIGNA Award for Actuarial Excellence.',
+      metrics: 'Summa Cum Laude honors & CIGNA Actuarial Award',
     },
     {
       id: 'm-4',
-      year: '2019–2023',
-      title: 'University of Michigan (Triple Major)',
-      category: 'Academic',
-      description: 'Pursued Actuarial Mathematics, Statistics, and Data Science majors with a minor in Business at the Stephen M. Ross School of Business.',
-      metrics: 'Complementary foundations in probability, inference, and computation',
+      year: '2022',
+      title: 'UMTKD Collegiate Taekwondo — National Bronze & Princeton Gold',
+      category: 'Personal',
+      description: 'Represented the University of Michigan Taekwondo Team (UMTKD) across collegiate circuits, securing Bronze at National Collegiate Taekwondo Championships and Gold at Princeton University NCTA.',
+      metrics: 'Collegiate Nationals Bronze · Princeton University Gold',
     },
     {
       id: 'm-5',
+      year: '2022',
+      title: 'Actuarial Consulting Intern at Aon',
+      category: 'Career',
+      description: 'Conducted liability valuation modeling, pension asset-liability matching, and interest rate sensitivity analysis for institutional portfolios.',
+      metrics: 'Multi-million-dollar pension valuation analysis',
+    },
+    {
+      id: 'm-6',
       year: 'Olympiad',
       title: 'Represented Malaysia at the International Mathematical Olympiad (IMO)',
       category: 'Academic',

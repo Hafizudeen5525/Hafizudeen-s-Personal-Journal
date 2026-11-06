@@ -21,6 +21,9 @@ export interface Post {
   sourceAuthor?: string; // Author of referenced article/book
   mathHighlight?: string; // Core equation/theorem (e.g. "E[X] = \sum x P(X=x)")
   keyTakeaway?: string;
+  coverImage?: string; // Optional hero/cover image for the post
+  coverImageCaption?: string;
+  gallery?: Array<{ url: string; caption: string; alt?: string }>;
 }
 
 export interface ReadingItem {

@@ -133,8 +133,24 @@ export const PostList: React.FC<PostListProps> = ({ onSelectPost }) => {
                       </div>
                     )}
 
+                    {/* Optional Cover Thumbnail if post has an image */}
+                    {post.coverImage && (
+                      <div className="relative rounded-md overflow-hidden aspect-16/9 bg-zinc-100 border border-zinc-200">
+                        <img
+                          src={post.coverImage}
+                          alt={post.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                        />
+                        <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-xs text-[10px] font-mono text-zinc-200 rounded-xs flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                          <span>Archival Photo</span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Title */}
-                    <h3 className="text-lg font-bold text-zinc-950 leading-snug group-hover:text-zinc-700 transition-colors">
+                    <h3 className="text-lg font-bold text-zinc-950 leading-snug group-hover:text-blue-900 transition-colors">
                       {post.title}
                     </h3>
 

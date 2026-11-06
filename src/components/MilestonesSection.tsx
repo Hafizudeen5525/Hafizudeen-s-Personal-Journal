@@ -32,7 +32,14 @@ export const MilestonesSection: React.FC = () => {
                     {m.year}
                   </span>
                   <span className="text-zinc-400">·</span>
-                  <span className="text-zinc-600 uppercase font-medium tracking-wide">{m.category}</span>
+                  <span className={`uppercase font-semibold tracking-wider text-[11px] ${
+                    m.category === 'Academic' ? 'text-blue-700' :
+                    m.category === 'Career' ? 'text-amber-800' :
+                    m.category === 'Quant & Code' ? 'text-emerald-700' :
+                    'text-indigo-700'
+                  }`}>
+                    {m.category}
+                  </span>
                 </div>
 
                 <h3 className="text-lg font-bold text-zinc-950">

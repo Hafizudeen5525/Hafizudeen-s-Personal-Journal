@@ -65,7 +65,7 @@ export const AboutSection: React.FC = () => {
             </span>
             <h3 className="font-bold text-zinc-950 text-base">University of Michigan</h3>
             <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-              Triple major in Actuarial Mathematics, Statistics, and Data Science, with a Ross School of Business minor. Studied uncertainty from probability, inference, and large-scale computation angles.
+              Triple major in Actuarial Math, Statistics, and Data Science with Ross Business minor. Summa Cum Laude, CIGNA Actuarial Award, and UMTKD Taekwondo athlete (Collegiate Nationals Bronze, Princeton Gold).
             </p>
           </div>
 

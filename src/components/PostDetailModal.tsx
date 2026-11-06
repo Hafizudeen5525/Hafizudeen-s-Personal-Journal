@@ -100,6 +100,58 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, onClose 
             {post.excerpt}
           </p>
 
+          {/* Lead Cover Image */}
+          {post.coverImage && (
+            <figure className="mb-10 rounded-xl overflow-hidden border border-zinc-200 shadow-sm bg-zinc-100">
+              <img
+                src={post.coverImage}
+                alt={post.coverImageCaption || post.title}
+                referrerPolicy="no-referrer"
+                className="w-full max-h-[440px] object-cover"
+              />
+              {post.coverImageCaption && (
+                <figcaption className="p-3 text-xs font-mono text-zinc-600 bg-white border-t border-zinc-200 flex items-center justify-between">
+                  <span>{post.coverImageCaption}</span>
+                </figcaption>
+              )}
+            </figure>
+          )}
+
+          {/* Photographic Memory Gallery Grid if available */}
+          {post.gallery && post.gallery.length > 0 && (
+            <section className="mb-12 space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 font-semibold">
+                  Field Gallery & Chronicle Photos
+                </span>
+                <span className="text-xs font-mono text-zinc-400">
+                  {post.gallery.length} Archival Photographs
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {post.gallery.map((item, idx) => (
+                  <figure
+                    key={idx}
+                    className="group bg-zinc-50 rounded-lg overflow-hidden border border-zinc-200 hover:border-zinc-400 transition-colors shadow-2xs"
+                  >
+                    <div className="overflow-hidden aspect-4/3 bg-zinc-200">
+                      <img
+                        src={item.url}
+                        alt={item.alt || item.caption}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
+                      />
+                    </div>
+                    <figcaption className="p-3 text-xs text-zinc-700 font-sans leading-relaxed bg-white border-t border-zinc-100">
+                      {item.caption}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* External Citation Box (if article annotation) */}
           {post.sourceAuthor && (
             <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono">

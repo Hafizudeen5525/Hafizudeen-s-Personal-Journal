@@ -25,6 +25,8 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({ post, onClose 
   const [keyTakeaway, setKeyTakeaway] = useState(post?.keyTakeaway || '');
   const [sourceAuthor, setSourceAuthor] = useState(post?.sourceAuthor || '');
   const [externalUrl, setExternalUrl] = useState(post?.externalUrl || '');
+  const [coverImage, setCoverImage] = useState(post?.coverImage || '');
+  const [coverImageCaption, setCoverImageCaption] = useState(post?.coverImageCaption || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +53,9 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({ post, onClose 
       keyTakeaway: keyTakeaway.trim() || undefined,
       sourceAuthor: sourceAuthor.trim() || undefined,
       externalUrl: externalUrl.trim() || undefined,
+      coverImage: coverImage.trim() || undefined,
+      coverImageCaption: coverImageCaption.trim() || undefined,
+      gallery: post?.gallery,
     };
 
     if (post) {
@@ -142,6 +147,88 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({ post, onClose 
                   placeholder="A clear 1-2 sentence overview of the concept or personal narrative..."
                   className="w-full px-3 py-2 bg-white border border-stone-300 rounded-md text-stone-900 font-sans text-sm focus:ring-1 focus:ring-stone-600 focus:outline-none"
                 />
+              </div>
+
+              {/* Cover Image & Photo Placeholder */}
+              <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between text-stone-800 uppercase font-semibold">
+                  <span>Cover Image & Visual Asset</span>
+                  <span className="text-[10px] text-stone-400 font-normal">Optional</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                  <div className="sm:col-span-8 space-y-2">
+                    <div>
+                      <label className="block text-stone-500 text-[10px] uppercase mb-1">Image URL or Local Upload</label>
+                      <input
+                        type="text"
+                        value={coverImage}
+                        onChange={(e) => setCoverImage(e.target.value)}
+                        placeholder="https://... or upload below"
+                        className="w-full px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-md text-stone-900 font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-stone-500 text-[10px] uppercase mb-1">Image Caption</label>
+                      <input
+                        type="text"
+                        value={coverImageCaption}
+                        onChange={(e) => setCoverImageCaption(e.target.value)}
+                        placeholder="Brief description of the photograph or chart..."
+                        className="w-full px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-md text-stone-900 font-sans text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-md text-xs font-mono uppercase tracking-wider cursor-pointer font-medium">
+                        <span>Upload Image File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = () => {
+                                if (typeof reader.result === 'string') {
+                                  setCoverImage(reader.result);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      {coverImage && (
+                        <button
+                          type="button"
+                          onClick={() => setCoverImage('')}
+                          className="ml-2 text-stone-400 hover:text-red-600 text-[11px] font-mono underline cursor-pointer"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-4 flex justify-center">
+                    {coverImage ? (
+                      <div className="relative rounded-lg overflow-hidden border border-stone-300 w-full h-28 bg-stone-100">
+                        <img
+                          src={coverImage}
+                          alt="Cover preview"
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-28 rounded-lg border-2 border-dashed border-stone-200 flex flex-col items-center justify-center text-stone-400 text-[10px] font-mono p-2 text-center bg-stone-50">
+                        <span>No image selected</span>
+                        <span className="text-[9px] text-stone-300">Upload or paste URL above</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Math / Quants Specific Fields */}
