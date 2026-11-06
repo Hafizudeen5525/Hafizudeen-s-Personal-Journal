@@ -1,9 +1,31 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BlogData, Post, ReadingItem, Milestone, SiteProfile, ContactMessage, PostStream, AuthUser } from '../types/blog';
+import { 
+  BlogData, 
+  Post, 
+  ReadingItem, 
+  Milestone, 
+  SiteProfile, 
+  ContactMessage, 
+  PostStream, 
+  AuthUser,
+  PageCustomization,
+  AnalyticsEvent
+} from '../types/blog';
 import { INITIAL_BLOG_DATA } from '../data/initialData';
+import { 
+  auth, 
+  googleProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged,
+  db,
+  User as FirebaseUser
+} from '../firebase';
+import { doc, getDoc, setDoc, onSnapshot, collection, addDoc } from 'firebase/firestore';
 
-const STORAGE_KEY = 'hafizudeen_quant_journal_v5';
-const AUTH_STORAGE_KEY = 'hafizudeen_auth_user_v1';
+const STORAGE_KEY = 'hafizudeen_quant_journal_cloud_cache_v1';
+const FIRESTORE_DOC_PATH = 'site_content';
+const FIRESTORE_MAIN_DOC = 'main';
 export const OWNER_EMAIL = 'hafizudeen991022@gmail.com';
 
 interface BlogContextType {
@@ -15,15 +37,23 @@ interface BlogContextType {
   activeStream: string;
   setActiveStream: (stream: string) => void;
   
-  // Authentication & Admin Access Control
+  // Real Firebase Authentication & Admin Access Control
   user: AuthUser | null;
+  firebaseUser: FirebaseUser | null;
   isOwnerAuthenticated: boolean;
-  loginWithGoogle: (email?: string, name?: string, picture?: string) => boolean;
-  logout: () => void;
+  isAuthLoading: boolean;
+  loginWithGoogleReal: () => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
   openAdminWithAuthCheck: () => void;
   
+  // Cloud Sync Status
+  isCloudSynced: boolean;
+  isSavingToCloud: boolean;
+  cloudSyncError: string | null;
+  saveDataToFirestore: (newData: BlogData) => Promise<boolean>;
+
   // Post operations
   createPost: (postData: Partial<Post>) => Post;
   updatePost: (id: string, updates: Partial<Post>) => void;
@@ -40,13 +70,17 @@ interface BlogContextType {
   updateMilestone: (id: string, updates: Partial<Milestone>) => void;
   deleteMilestone: (id: string) => void;
 
-  // Profile
+  // Profile & Customization
   updateProfile: (updates: Partial<SiteProfile>) => void;
+  updateCustomization: (updates: Partial<PageCustomization>) => void;
   
   // Contact messages
   submitContactMessage: (msg: { name: string; email: string; subject: string; message: string }) => void;
   markMessageAsRead: (id: string) => void;
   deleteMessage: (id: string) => void;
+
+  // Analytics
+  recordPageView: (page: string, postSlug?: string) => void;
 
   // Data management
   exportDataJson: () => void;
@@ -61,6 +95,7 @@ interface BlogContextType {
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
 
 export function BlogProvider({ children }: { children: React.ReactNode }) {
+  // Initialize with local cache or fallback initial data
   const [data, setData] = useState<BlogData>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -68,7 +103,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
         return JSON.parse(stored);
       }
     } catch (e) {
-      console.warn('Failed to parse stored blog data', e);
+      console.warn('Failed to parse cached blog data', e);
     }
     return INITIAL_BLOG_DATA;
   });
@@ -77,50 +112,91 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeStream, setActiveStream] = useState<string>('All');
   const [notification, setNotification] = useState<string | null>(null);
-  
-  // Auth state
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (e) {
-      // ignore
-    }
-    return null;
-  });
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Cloud Firestore Sync states
+  const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
+  const [isSavingToCloud, setIsSavingToCloud] = useState<boolean>(false);
+  const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
+
+  // Firebase Real Auth state
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
   const isOwnerAuthenticated = Boolean(
-    user && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase() && user.isOwner
+    user && 
+    user.email.toLowerCase() === OWNER_EMAIL.toLowerCase() && 
+    user.isOwner
   );
 
-  // Sync with localStorage
+  // 1. Listen for real Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setIsAuthLoading(false);
+      setFirebaseUser(fbUser);
+      if (fbUser && fbUser.email) {
+        const email = fbUser.email.toLowerCase();
+        const isOwner = email === OWNER_EMAIL.toLowerCase();
+        setUser({
+          email: fbUser.email,
+          name: fbUser.displayName || (isOwner ? data.profile.name : email.split('@')[0]),
+          picture: fbUser.photoURL || undefined,
+          isOwner,
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [data.profile.name]);
+
+  // 2. Real-time Cloud Firestore synchronization (Cross-device, multi-user persistence)
+  useEffect(() => {
+    const docRef = doc(db, FIRESTORE_DOC_PATH, FIRESTORE_MAIN_DOC);
+    
+    // Subscribe to live Firestore changes
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const cloudData = docSnap.data() as BlogData;
+        if (cloudData && cloudData.profile && Array.isArray(cloudData.posts)) {
+          setData(cloudData);
+          setIsCloudSynced(true);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
+          } catch (e) {
+            // ignore
+          }
+        }
+      } else {
+        // If document doesn't exist in Firestore yet, seed it with INITIAL_BLOG_DATA
+        setDoc(docRef, INITIAL_BLOG_DATA).then(() => {
+          setIsCloudSynced(true);
+        }).catch((err) => {
+          console.warn('Initial cloud seed failed or rules pending:', err);
+        });
+      }
+    }, (error) => {
+      console.warn('Firestore onSnapshot notice:', error.message);
+      setCloudSyncError(error.message);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Update local storage cache whenever data changes
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
-      console.error('Failed to save to localStorage', e);
+      console.error('Failed to save to local cache', e);
     }
   }, [data]);
 
-  // Sync Auth with localStorage
-  useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-      } else {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, [user]);
-
   useEffect(() => {
     if (notification) {
-      const t = setTimeout(() => setNotification(null), 3500);
+      const t = setTimeout(() => setNotification(null), 4000);
       return () => clearTimeout(t);
     }
   }, [notification]);
@@ -129,36 +205,73 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     setNotification(msg);
   };
 
-  const loginWithGoogle = (email?: string, name?: string, picture?: string): boolean => {
-    const targetEmail = (email || OWNER_EMAIL).toLowerCase().trim();
-    const isOwner = targetEmail === OWNER_EMAIL.toLowerCase();
-
-    const authUser: AuthUser = {
-      email: targetEmail,
-      name: name || (isOwner ? data.profile.name : targetEmail.split('@')[0]),
-      picture: picture || (isOwner ? data.profile.avatarUrl : undefined),
-      isOwner,
-    };
-
-    setUser(authUser);
-
-    if (isOwner) {
-      showNotice(`Authenticated as ${targetEmail}. Admin access unlocked.`);
-      setIsAuthModalOpen(false);
-      setActiveView('admin');
+  // Helper to persist data to Firestore
+  const saveDataToFirestore = async (newData: BlogData): Promise<boolean> => {
+    setIsSavingToCloud(true);
+    setCloudSyncError(null);
+    try {
+      const docRef = doc(db, FIRESTORE_DOC_PATH, FIRESTORE_MAIN_DOC);
+      await setDoc(docRef, newData);
+      setIsSavingToCloud(false);
+      setIsCloudSynced(true);
       return true;
-    } else {
-      showNotice(`Signed in as ${targetEmail}. Access restricted: Only ${OWNER_EMAIL} can access studio management.`);
+    } catch (err: any) {
+      console.error('Error persisting to Firestore:', err);
+      setIsSavingToCloud(false);
+      setCloudSyncError(err?.message || 'Failed to sync with cloud');
       return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    if (activeView === 'admin') {
-      setActiveView('public');
+  // Real Google Sign-in with Popup
+  const loginWithGoogleReal = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setIsAuthLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const loggedUser = result.user;
+      const email = (loggedUser.email || '').toLowerCase().trim();
+      const isOwner = email === OWNER_EMAIL.toLowerCase();
+
+      setUser({
+        email: loggedUser.email || '',
+        name: loggedUser.displayName || (isOwner ? data.profile.name : email.split('@')[0]),
+        picture: loggedUser.photoURL || undefined,
+        isOwner,
+      });
+
+      setIsAuthLoading(false);
+
+      if (isOwner) {
+        showNotice(`Welcome, ${loggedUser.displayName || 'Owner'}. Real Google verification confirmed.`);
+        setIsAuthModalOpen(false);
+        setActiveView('admin');
+        return { success: true };
+      } else {
+        showNotice(`Signed in as ${loggedUser.email}. Access restricted to ${OWNER_EMAIL}.`);
+        return { 
+          success: false, 
+          error: `Google account ${loggedUser.email} is not authorized. Only ${OWNER_EMAIL} can access site administration.` 
+        };
+      }
+    } catch (err: any) {
+      setIsAuthLoading(false);
+      console.error('Google Sign-in error:', err);
+      const errMsg = err?.message || 'Google authentication was cancelled or blocked.';
+      return { success: false, error: errMsg };
     }
-    showNotice('Logged out of Google account.');
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      if (activeView === 'admin') {
+        setActiveView('public');
+      }
+      showNotice('Signed out of Google account.');
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
   };
 
   const openAdminWithAuthCheck = () => {
@@ -169,6 +282,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Post Operations with Firestore persistence
   const createPost = (postData: Partial<Post>): Post => {
     const slug = (postData.title || 'untitled-post')
       .toLowerCase()
@@ -191,66 +305,61 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       sourceAuthor: postData.sourceAuthor,
       mathHighlight: postData.mathHighlight,
       keyTakeaway: postData.keyTakeaway,
+      coverImage: postData.coverImage,
+      coverImageCaption: postData.coverImageCaption,
+      gallery: postData.gallery,
     };
 
-    setData((prev) => ({
-      ...prev,
-      posts: [newPost, ...prev.posts],
-    }));
+    const nextData: BlogData = {
+      ...data,
+      posts: [newPost, ...data.posts],
+    };
 
-    showNotice(`Published: "${newPost.title}"`);
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice(`Created "${newPost.title}" and saved to cloud.`);
     return newPost;
   };
 
   const updatePost = (id: string, updates: Partial<Post>) => {
-    setData((prev) => ({
-      ...prev,
-      posts: prev.posts.map((p) => {
-        if (p.id === id) {
-          const updated = { ...p, ...updates };
-          if (updates.title && !updates.slug) {
-            updated.slug = updates.title
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/(^-|-$)+/g, '');
-          }
-          return updated;
-        }
-        return p;
-      }),
-    }));
-
-    setSelectedPost((curr) => (curr && curr.id === id ? { ...curr, ...updates } : curr));
-    showNotice('Post updated successfully');
+    const nextData: BlogData = {
+      ...data,
+      posts: data.posts.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Post updated and synced globally.');
   };
 
   const deletePost = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      posts: prev.posts.filter((p) => p.id !== id),
-    }));
-    if (selectedPost && selectedPost.id === id) {
-      setSelectedPost(null);
-    }
-    showNotice('Post removed');
+    const nextData: BlogData = {
+      ...data,
+      posts: data.posts.filter((p) => p.id !== id),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Post removed from cloud database.');
   };
 
   const togglePostStatus = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      posts: prev.posts.map((p) =>
+    const nextData: BlogData = {
+      ...data,
+      posts: data.posts.map((p) =>
         p.id === id ? { ...p, status: p.status === 'published' ? 'draft' : 'published' } : p
       ),
-    }));
-    showNotice('Post status updated');
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Post publication status updated.');
   };
 
+  // Reading Shelf Operations
   const addReadingItem = (item: Partial<ReadingItem>) => {
     const newItem: ReadingItem = {
-      id: `read-${Date.now()}`,
-      title: item.title || 'Untitled Item',
+      id: `item-${Date.now()}`,
+      title: item.title || 'Untitled',
       author: item.author || 'Unknown',
-      type: item.type || 'Book',
+      type: item.type || 'Paper',
       url: item.url || '#',
       status: item.status || 'Recommended',
       notes: item.notes || '',
@@ -258,99 +367,181 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       dateAdded: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
       streamCategory: item.streamCategory || 'Math & Quants',
     };
-    setData((prev) => ({
-      ...prev,
-      readingShelf: [newItem, ...prev.readingShelf],
-    }));
-    showNotice('Item added to reading shelf');
+    const nextData: BlogData = {
+      ...data,
+      readingShelf: [newItem, ...data.readingShelf],
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Reading item added to shelf.');
   };
 
   const updateReadingItem = (id: string, updates: Partial<ReadingItem>) => {
-    setData((prev) => ({
-      ...prev,
-      readingShelf: prev.readingShelf.map((r) => (r.id === id ? { ...r, ...updates } : r)),
-    }));
-    showNotice('Reading item updated');
+    const nextData: BlogData = {
+      ...data,
+      readingShelf: data.readingShelf.map((it) => (it.id === id ? { ...it, ...updates } : it)),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Reading shelf entry updated.');
   };
 
   const deleteReadingItem = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      readingShelf: prev.readingShelf.filter((r) => r.id !== id),
-    }));
-    showNotice('Removed from reading shelf');
+    const nextData: BlogData = {
+      ...data,
+      readingShelf: data.readingShelf.filter((it) => it.id !== id),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Reading item removed.');
   };
 
+  // Milestones Operations
   const addMilestone = (m: Partial<Milestone>) => {
     const newM: Milestone = {
       id: `m-${Date.now()}`,
       year: m.year || `${new Date().getFullYear()}`,
-      title: m.title || 'Milestone',
-      category: m.category || 'Quant & Code',
+      title: m.title || 'New Milestone',
+      category: m.category || 'Academic',
       description: m.description || '',
       metrics: m.metrics,
     };
-    setData((prev) => ({
-      ...prev,
-      milestones: [newM, ...prev.milestones],
-    }));
-    showNotice('Milestone added');
+    const nextData: BlogData = {
+      ...data,
+      milestones: [newM, ...data.milestones],
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Milestone added.');
   };
 
   const updateMilestone = (id: string, updates: Partial<Milestone>) => {
-    setData((prev) => ({
-      ...prev,
-      milestones: prev.milestones.map((m) => (m.id === id ? { ...m, ...updates } : m)),
-    }));
-    showNotice('Milestone updated');
+    const nextData: BlogData = {
+      ...data,
+      milestones: data.milestones.map((it) => (it.id === id ? { ...it, ...updates } : it)),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Milestone updated.');
   };
 
   const deleteMilestone = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      milestones: prev.milestones.filter((m) => m.id !== id),
-    }));
-    showNotice('Milestone deleted');
+    const nextData: BlogData = {
+      ...data,
+      milestones: data.milestones.filter((it) => it.id !== id),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Milestone removed.');
   };
 
+  // Profile & Customization
   const updateProfile = (updates: Partial<SiteProfile>) => {
-    setData((prev) => ({
-      ...prev,
+    const nextData: BlogData = {
+      ...data,
       profile: {
-        ...prev.profile,
+        ...data.profile,
         ...updates,
       },
-    }));
-    showNotice('Profile & picture saved');
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Profile updated and saved to cloud.');
   };
 
+  const updateCustomization = (updates: Partial<PageCustomization>) => {
+    const nextData: BlogData = {
+      ...data,
+      customization: {
+        ...(data.customization || {
+          themeColor: 'collegiate',
+          heroHeadline: 'What does it mean for a model to be right?',
+          heroSubtext: 'Exploring the foundations of quantitative finance, market microstructure, and stochastic analysis.',
+          heroKicker: 'Hafizudeen Saman · Mathematical Finance & Quant Research',
+          showEquationsOnHero: true,
+          showPhotoGalleryOnHero: true,
+          fontScale: 'normal',
+        }),
+        ...updates,
+      },
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Page customization saved.');
+  };
+
+  // Contact messages
   const submitContactMessage = (msg: { name: string; email: string; subject: string; message: string }) => {
     const newMsg: ContactMessage = {
       id: `msg-${Date.now()}`,
-      ...msg,
+      name: msg.name,
+      email: msg.email,
+      subject: msg.subject,
+      message: msg.message,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       read: false,
     };
-    setData((prev) => ({
-      ...prev,
-      messages: [newMsg, ...prev.messages],
-    }));
-    showNotice('Thank you! Your message was sent to Hafizudeen.');
+    const nextData: BlogData = {
+      ...data,
+      messages: [newMsg, ...data.messages],
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Your message was sent successfully.');
+
+    // Also record message to Firestore messages collection for independent auditing
+    try {
+      addDoc(collection(db, 'messages'), newMsg);
+    } catch (e) {
+      // ignore
+    }
   };
 
   const markMessageAsRead = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      messages: prev.messages.map((m) => (m.id === id ? { ...m, read: true } : m)),
-    }));
+    const nextData: BlogData = {
+      ...data,
+      messages: data.messages.map((m) => (m.id === id ? { ...m, read: true } : m)),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
   };
 
   const deleteMessage = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      messages: prev.messages.filter((m) => m.id !== id),
-    }));
-    showNotice('Message removed');
+    const nextData: BlogData = {
+      ...data,
+      messages: data.messages.filter((m) => m.id !== id),
+    };
+    setData(nextData);
+    saveDataToFirestore(nextData);
+    showNotice('Message removed.');
+  };
+
+  // Analytics
+  const recordPageView = (page: string, postSlug?: string) => {
+    const ev: AnalyticsEvent = {
+      id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: Date.now(),
+      page,
+      postSlug,
+      device: typeof navigator !== 'undefined' ? (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop') : 'Web',
+      dateStr: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    };
+
+    const currentAnalytics = data.analytics || [];
+    // Keep last 150 events
+    const updatedAnalytics = [ev, ...currentAnalytics.slice(0, 149)];
+    const nextData: BlogData = {
+      ...data,
+      analytics: updatedAnalytics,
+    };
+    setData(nextData);
+
+    // Write event to Firestore analytics collection silently
+    try {
+      addDoc(collection(db, 'analytics'), ev).catch(() => {});
+    } catch (e) {
+      // ignore
+    }
   };
 
   const exportDataJson = () => {
@@ -359,10 +550,10 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `hafizudeen-journal-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `hafizudeen-journal-cloud-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    showNotice('Backup downloaded as JSON');
+    showNotice('Backup downloaded as JSON.');
   };
 
   const importDataJson = (jsonString: string): boolean => {
@@ -370,7 +561,8 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       const parsed = JSON.parse(jsonString);
       if (parsed.profile && Array.isArray(parsed.posts)) {
         setData(parsed);
-        showNotice('Journal data restored successfully');
+        saveDataToFirestore(parsed);
+        showNotice('Journal data restored and synced with Cloud Firestore.');
         return true;
       }
       throw new Error('Invalid format');
@@ -382,8 +574,8 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
 
   const resetToDefaults = () => {
     setData(INITIAL_BLOG_DATA);
-    localStorage.removeItem(STORAGE_KEY);
-    showNotice('Reset journal to original curated notes and essays');
+    saveDataToFirestore(INITIAL_BLOG_DATA);
+    showNotice('Reset journal to original curated notes and synced to Cloud.');
   };
 
   return (
@@ -397,12 +589,18 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
         activeStream,
         setActiveStream,
         user,
+        firebaseUser,
         isOwnerAuthenticated,
-        loginWithGoogle,
+        isAuthLoading,
+        loginWithGoogleReal,
         logout,
         isAuthModalOpen,
         setIsAuthModalOpen,
         openAdminWithAuthCheck,
+        isCloudSynced,
+        isSavingToCloud,
+        cloudSyncError,
+        saveDataToFirestore,
         createPost,
         updatePost,
         deletePost,
@@ -414,9 +612,11 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
         updateMilestone,
         deleteMilestone,
         updateProfile,
+        updateCustomization,
         submitContactMessage,
         markMessageAsRead,
         deleteMessage,
+        recordPageView,
         exportDataJson,
         importDataJson,
         resetToDefaults,

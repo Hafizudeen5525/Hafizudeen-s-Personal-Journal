@@ -82,10 +82,31 @@ export interface AuthUser {
   isOwner: boolean;
 }
 
+export interface PageCustomization {
+  themeColor: 'collegiate' | 'neutral' | 'emerald' | 'monochrome';
+  heroHeadline: string;
+  heroSubtext: string;
+  heroKicker: string;
+  showEquationsOnHero: boolean;
+  showPhotoGalleryOnHero: boolean;
+  fontScale: 'normal' | 'compact' | 'relaxed';
+}
+
+export interface AnalyticsEvent {
+  id: string;
+  timestamp: number;
+  page: string;
+  postSlug?: string;
+  device?: string;
+  dateStr?: string;
+}
+
 export interface BlogData {
   profile: SiteProfile;
   posts: Post[];
   readingShelf: ReadingItem[];
   milestones: Milestone[];
   messages: ContactMessage[];
+  customization?: PageCustomization;
+  analytics?: AnalyticsEvent[];
 }

@@ -1,0 +1,139 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "Article, mathematical explanation, personal narrative, or reading note",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "stream": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "publishedDate": { "type": "string" },
+        "readTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["published", "draft"] },
+        "featured": { "type": "boolean" },
+        "tags": { "type": "array" },
+        "externalUrl": { "type": "string" },
+        "sourceAuthor": { "type": "string" },
+        "mathHighlight": { "type": "string" },
+        "keyTakeaway": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "coverImageCaption": { "type": "string" }
+      },
+      "required": ["id", "title", "slug", "stream", "excerpt", "content", "status"]
+    },
+    "ReadingItem": {
+      "title": "ReadingItem",
+      "description": "Paper, book, or article recommendation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "type": { "type": "string" },
+        "url": { "type": "string" },
+        "status": { "type": "string" },
+        "notes": { "type": "string" },
+        "rating": { "type": "number" },
+        "dateAdded": { "type": "string" },
+        "streamCategory": { "type": "string" }
+      },
+      "required": ["id", "title", "author", "type", "url"]
+    },
+    "Milestone": {
+      "title": "Milestone",
+      "description": "Academic, career, competition or personal milestone",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "year": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "metrics": { "type": "string" }
+      },
+      "required": ["id", "year", "title", "category", "description"]
+    },
+    "SiteProfile": {
+      "title": "SiteProfile",
+      "description": "Author biography, research interests, axioms, contact info, and theme custom settings",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "tagline": { "type": "string" },
+        "bio": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "email": { "type": "string" },
+        "location": { "type": "string" },
+        "interests": { "type": "array" },
+        "pinnedThoughts": { "type": "array" },
+        "themeAccent": { "type": "string" },
+        "fontFamily": { "type": "string" },
+        "heroLayout": { "type": "string" }
+      },
+      "required": ["name", "email", "bio"]
+    },
+    "PageCustomization": {
+      "title": "PageCustomization",
+      "description": "Full page styling and customization settings configured by the admin",
+      "type": "object",
+      "properties": {
+        "themeColor": { "type": "string" },
+        "accentTone": { "type": "string" },
+        "heroKicker": { "type": "string" },
+        "heroHeadline": { "type": "string" },
+        "heroSubtext": { "type": "string" },
+        "showEquationsOnHero": { "type": "boolean" },
+        "showPhotoGalleryOnHero": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "AnalyticsEvent": {
+      "title": "AnalyticsEvent",
+      "description": "Visitor session pageview and engagement tracking event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "page": { "type": "string" },
+        "postSlug": { "type": "string" },
+        "referrer": { "type": "string" },
+        "device": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "page"]
+    },
+    "ContactMessage": {
+      "title": "ContactMessage",
+      "description": "Visitor contact submission message",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "date": { "type": "string" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "name", "email", "message"]
+    }
+  },
+  "firestore": {
+    "/site_content/{contentDocId}": {
+      "schema": { "$ref": "#/entities/SiteProfile" },
+      "description": "Global persisted blog state including posts, profile, reading shelf, milestones, and customization"
+    },
+    "/analytics/{eventId}": {
+      "schema": { "$ref": "#/entities/AnalyticsEvent" },
+      "description": "Anonymous visitor analytics events for pageviews and readings"
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ContactMessage" },
+      "description": "Inquiries sent by visitors to Hafizudeen"
+    }
+  }
+}

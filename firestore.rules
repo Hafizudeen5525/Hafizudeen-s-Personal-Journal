@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwnerEmail() {
+      return request.auth != null && 
+             request.auth.token.email == 'hafizudeen991022@gmail.com' &&
+             request.auth.token.email_verified == true;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Site content: Public can read, only authenticated owner can write
+    match /site_content/{contentDocId} {
+      allow read: if isValidId(contentDocId);
+      allow write: if isValidId(contentDocId) && isOwnerEmail();
+    }
+
+    // Analytics: Visitors can record pageviews, only owner can view analytics
+    match /analytics/{eventId} {
+      allow create: if isValidId(eventId) &&
+                       request.resource.data.timestamp is number &&
+                       request.resource.data.page is string;
+      allow read, delete: if isOwnerEmail();
+    }
+
+    // Contact messages: Anyone can submit a message, only owner can read/manage
+    match /messages/{messageId} {
+      allow create: if isValidId(messageId) &&
+                       request.resource.data.name is string &&
+                       request.resource.data.email is string &&
+                       request.resource.data.message is string;
+      allow read, update, delete: if isOwnerEmail();
+    }
+  }
+}

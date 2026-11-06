@@ -27,17 +27,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSelectPost }) => {
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-600 mb-4">
             <span className="font-semibold text-zinc-950">{data.profile.name}</span>
             <span aria-hidden="true" className="text-amber-500 font-bold">·</span>
-            <span>Mathematical Finance & Quant Research</span>
+            <span>{data.customization?.heroKicker || 'Mathematical Finance & Quant Research'}</span>
             <span aria-hidden="true" className="text-blue-500 font-bold">·</span>
             <span className="text-blue-700 font-semibold">Ann Arbor Alum</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-zinc-950 tracking-tight leading-[1.08] mb-6 [text-wrap:balance]">
-            What does it mean for a model to be right?
+            {data.customization?.heroHeadline || 'What does it mean for a model to be right?'}
           </h1>
 
           <p className="text-zinc-600 text-base sm:text-lg leading-relaxed max-w-2xl font-sans">
-            Exploring the foundations of quantitative finance, market microstructure, and stochastic analysis. Documenting technical notes, book annotations, and milestones bridging Olympiad mathematics, university research, and trading desks.
+            {data.customization?.heroSubtext || 'Exploring the foundations of quantitative finance, market microstructure, and stochastic analysis. Documenting technical notes, book annotations, and milestones bridging Olympiad mathematics, university research, and trading desks.'}
           </p>
 
           {/* Stream Quick Filter Tags */}

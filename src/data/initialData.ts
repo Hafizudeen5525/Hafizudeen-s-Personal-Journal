@@ -394,4 +394,19 @@ The mechanical rebalancing operation systematically sells overvalued asset units
       read: false,
     },
   ],
+  customization: {
+    themeColor: 'collegiate',
+    heroKicker: 'Hafizudeen Saman · Mathematical Finance & Quant Research',
+    heroHeadline: 'What does it mean for a model to be right?',
+    heroSubtext: 'Exploring the foundations of quantitative finance, market microstructure, and stochastic analysis. Documenting technical notes, book annotations, and milestones bridging Olympiad mathematics, university research, and trading desks.',
+    showEquationsOnHero: true,
+    showPhotoGalleryOnHero: true,
+    fontScale: 'normal',
+  },
+  analytics: [
+    { id: 'ev-1', timestamp: Date.now() - 86400000 * 2, page: '/', device: 'Desktop (Chrome/macOS)', dateStr: '2 days ago' },
+    { id: 'ev-2', timestamp: Date.now() - 86400000, page: '/#posts', postSlug: 'the-michigan-chronicle-ann-arbor-experience', device: 'Mobile (Safari/iOS)', dateStr: 'Yesterday' },
+    { id: 'ev-3', timestamp: Date.now() - 3600000 * 4, page: '/#reading', device: 'Desktop (Firefox/Linux)', dateStr: 'Today' },
+    { id: 'ev-4', timestamp: Date.now() - 1800000, page: '/#about', device: 'Desktop (Chrome/Windows)', dateStr: 'Just now' },
+  ],
 };
